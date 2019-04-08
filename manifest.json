@@ -1,0 +1,22 @@
+{
+  "name": "github-pagination-extension",
+  "version": "0.0.1",
+  "manifest_version": 2,
+  "description": "This is GitHub's pagination extensions.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "browser_action": {
+    "default_popup": "html/popup.html"
+  },
+  "content_scripts": [
+      {
+          "matches": [
+            "https://github.com/*/*"
+          ],
+          "js": ["js/jquery-3.3.1.min.js", "js/contents.js"]
+      }
+  ]
+}
