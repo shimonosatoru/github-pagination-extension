@@ -7,6 +7,21 @@ $(function() {
         return false;
     }
 
+    // 総コミット数の取得
+    const url = location.pathname.match(/\/(.*)\/(.*)\//)[1];
+    $.ajax({
+		url: 'https://github.com/' + url,
+		cache: false,
+		success: function(html){
+            const commitNumStr = $(html)
+                .find('.commits .num')
+                .text()
+                .trim()
+                .replace(/,/, '');
+            const commitNum = parseInt(commitNumStr, 10);
+		}
+	});
+
     /**
      * ページステータス
      * 今がどういうページにいるのか判別するためのもの
