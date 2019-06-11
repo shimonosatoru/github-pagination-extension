@@ -8,19 +8,49 @@ $(function() {
     }
 
     // 総コミット数の取得
-    const url = location.pathname.match(/\/(.*)\/(.*)\//)[1];
-    $.ajax({
-		url: 'https://github.com/' + url,
-		cache: false,
-		success: function(html){
-            const commitNumStr = $(html)
-                .find('.commits .num')
-                .text()
-                .trim()
-                .replace(/,/, '');
-            const commitNum = parseInt(commitNumStr, 10);
-		}
-	});
+    function getTotalCommit() {
+        const url = location.pathname.match(/\/(.*)\/(.*)\//)[1];
+        return $.ajax({
+            url: 'https://github.com/' + url,
+            dataType: 'html',
+            type: 'GET'
+        });
+    }
+    
+    getTotalCommit().done(function(result) {
+
+        const totalCommitNumStr = $(result)
+                    .find('.commits .num')
+                    .text()
+                    .trim()
+                    .replace(/,/, '');
+        const totalCommitNum = parseInt(totalCommitNumStr, 10);
+
+        // コミット分のページナンバー, 現在のページナンバーを定義
+        // paginateをrenderする
+        let commitNum, pageNum;
+        switch (pageStatus) {
+            case 0:
+                commitNum = 34;
+                pageNum = 1;
+                renderPaginate(0, 34, 1);
+                break;
+            case 1:
+                pageNum = (totalCommitNum - totalCommitNum % 35) / 35;
+                renderPaginate(1, totalCommitNum, pageNum);
+                break;
+            case 2:
+                const index = pageElem.attr('href').indexOf('+');
+                commitNum = parseInt(href.slice(index + 1), 10);
+                pageNum = (commitNum - 34) / 35 + 1;
+                renderPaginate(2, commitNum, pageNum);
+                break;
+            default:
+                break;
+        }
+        
+    }).fail(function(result) {
+    });
 
     /**
      * ページステータス
@@ -63,30 +93,6 @@ $(function() {
         pageStatus = 1;
     } else {
         pageStatus = 2;
-    }
-
-    switch (pageStatus) {
-        case 0:
-            // コミット分のページナンバー, 現在のページナンバーを定義
-            const commitNum = 34;
-            const pageNum = 1;
-            renderPaginate(0, 34, 1);
-            break;
-        case 1:
-            // TODO: コミット数が取得できたら設定する
-            const maxCommitForTest = 5000;
-            commitNum = maxCommitForTest - maxCommitForTest % 35;
-            pageNum = (maxCommitForTest - 34) / 35 + 1;
-            renderPaginate(1, commitNum, pageNum);
-            break;
-        case 2:
-            const index = pageElem.attr('href').indexOf('+');
-            commitNum = parseInt(href.slice(index + 1), 10);
-            pageNum = (commitNum - 34) / 35 + 1;
-            renderPaginate(2, commitNum, pageNum);
-            break;
-        default:
-            break;
     }
 
     function renderPaginate(pageStatus, commitNum, pageNum) {
