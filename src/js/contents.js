@@ -79,7 +79,7 @@ $(function() {
         if (pageStatus === 0) {
 
             // OlderのHTMLを保存しておく
-            const olderHTML = pageBtnElem;
+            const olderHTML = pageBtnElem.prop('outerHTML');
 
             // ボタンのHTMLを詰め込んでく
             let pageElementBuilder = '';
@@ -89,11 +89,9 @@ $(function() {
                 if (i === 0) {
                     pageElementBuilder += '<em class="current" data-total-pages="9">1</em>';
                 } else {
-                    let paginateHTML = '<a rel="nofollow" ' +
-                                       'class="btn btn-outline BtnGroup-item" ' +
-                                       'href="https://github.com/team-lab/mynavibaito-main/commits/master?after=edbf7f630616206b2cf9cff8db2f5f4d0986630f+' +
-                                       (commitNum + 35 * (i + 1)) + '">' + (i + 1) + '</a>'; // 35ずつ足していく
-                    pageElementBuilder += paginateHTML;
+                    pageElementBuilder += olderHTML
+                        .replace(/\+(\d+)/, '+' + (commitNum + 35 * (i - 1)))
+                        .replace(/>Older</, '>' + (i + pageNum) + '<');
                 }
             }
 
