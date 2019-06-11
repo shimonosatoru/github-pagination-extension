@@ -130,7 +130,28 @@ $(function() {
         } else if (pageStatus === 1) {
 
             // NewerのHTMLを保存しておく
-            const newerHTML = pageBtnElem;
+            const newerHTML = pageBtnElem.prop('outerHTML');
+
+            // ボタンのHTMLを詰め込んでく
+            let pageElementBuilder = '';
+            for (let i = 0; i < 5; i++) {
+                
+                // currentであればリンクなしで追加
+                if (i === 4) {
+                    pageElementBuilder += '<em class="current" data-total-pages="' + pageNum + '">' + pageNum + '</em>';
+                } else {
+                    pageElementBuilder += newerHTML
+                        .replace(/\+(\d+)/, '+' + (commitNum - 35 * (4 - i)))
+                        .replace(/>Newer</, '>' + (i + pageNum) + '<');
+                }
+            }
+            
+
+            // ボタンを作成
+            pageGroupElem.html(pageElementBuilder);
+
+            // currentの設定
+            pageGroupElem.find('em').css(currentProperty);
 
             // NewerとOlderを挿入する
             pageGroupElem.prepend(newerHTML);
