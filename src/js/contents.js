@@ -17,8 +17,29 @@ $(function() {
     let pageStatus = 0;
 
     // ページネーションのリンク要素
+    const pageGroupElem = $('.paginate-container .BtnGroup');
     const pageBtnElem = $('.paginate-container a.btn');
     const pageDisabledElem = $('.paginate-container button.btn');
+
+    // current style
+    const currentProperty = {
+        'border': '1px solid #e1e4e8',
+        'cursor': 'pointer',
+        'float': 'left',
+        'font-size': '13px',
+        'font-style': 'normal',
+        'font-weight': '600',
+        'margin-left': '-1px',
+        'padding': '6.5px 12px',
+        'position': 'relative',
+        'user-select': 'none',
+        'vertical-align': 'middle',
+        'white-space': 'nowrap',
+        'background-color': '#0366d6',
+        'border-color': '#0366d6',
+        'color': '#fff',
+        'z-index': '3'
+    };
 
     // pageStatusの判定
     if (pageDisabledElem.text() == 'Newer') {
