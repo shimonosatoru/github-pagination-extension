@@ -31,23 +31,22 @@ $(function() {
         let commitNum, pageNum;
         switch (pageStatus) {
             case 0:
-                commitNum = 34;
                 pageNum = 1;
-                renderPaginate(0, 34, 1);
                 break;
             case 1:
                 pageNum = (totalCommitNum - totalCommitNum % 35) / 35;
-                renderPaginate(1, totalCommitNum, pageNum);
+                commitNum = null;
                 break;
             case 2:
-                const index = pageElem.attr('href').indexOf('+');
-                commitNum = parseInt(href.slice(index + 1), 10);
+                const index = location.href.indexOf('+');
+                commitNum = parseInt(location.href.slice(index + 1), 10);
                 pageNum = (commitNum - 34) / 35 + 1;
-                renderPaginate(2, commitNum, pageNum);
                 break;
             default:
                 break;
         }
+
+        renderPaginate(pageStatus, pageNum, totalCommitNum);
         
     }).fail(function(result) {
     });
@@ -57,7 +56,7 @@ $(function() {
      * 今がどういうページにいるのか判別するためのもの
      * 0: 最初のページ
      * 1: 最後のページ
-     * 2: 2以降で最後以外のページ
+     * 2: 中間ページ
      */
     let pageStatus = 0;
 
@@ -95,7 +94,7 @@ $(function() {
         pageStatus = 2;
     }
 
-    function renderPaginate(pageStatus, commitNum, pageNum) {
+    function renderPaginate(pageStatus, pageNum, totalCommitNum) {
 
         if (pageStatus === 0) {
 
@@ -111,7 +110,7 @@ $(function() {
                     pageElementBuilder += '<em class="current" data-total-pages="9">1</em>';
                 } else {
                     pageElementBuilder += olderHTML
-                        .replace(/\+(\d+)/, '+' + (commitNum + 35 * (i - 1)))
+                        .replace(/\+(\d+)/, '+' + (34 + 35 * (i - 1)))
                         .replace(/>Older</, '>' + (i + pageNum) + '<');
                 }
             }
@@ -137,12 +136,14 @@ $(function() {
             for (let i = 0; i < 5; i++) {
                 
                 // currentであればリンクなしで追加
-                if (i === 4) {
+                if (i === 0) {
                     pageElementBuilder += '<em class="current" data-total-pages="' + pageNum + '">' + pageNum + '</em>';
                 } else {
-                    pageElementBuilder += newerHTML
-                        .replace(/\+(\d+)/, '+' + (commitNum - 35 * (4 - i)))
-                        .replace(/>Newer</, '>' + (i + pageNum) + '<');
+                    let commitNum = (totalCommitNum - totalCommitNum % 35 + 1) - (35 * (i - 1));
+                    pageElementBuilder = newerHTML
+                        .replace(/\+(\d+)/, '+' + commitNum)
+                        .replace(/>Newer</, '>' + (pageNum - i) + '<')
+                        + pageElementBuilder;
                 }
             }
             
@@ -160,8 +161,39 @@ $(function() {
         } else if (pageStatus === 2) {
 
             // NewerとOlderのHTMLを保存しておく
-            const newerHTML = pageBtnElem.first();
-            const olderHTML = pageBtnElem.first().next();
+            const newerHTML = pageBtnElem.first().prop('outerHTML');
+            const olderHTML = pageBtnElem.first().next().prop('outerHTML');
+
+            // ボタンのHTMLを詰め込んでく
+            let pageElementBuilder = '';
+            for (let i = 0; i < 5; i++) {
+                
+                // currentであればリンクなしで追加
+                if (i === 4) {
+                    pageElementBuilder += '<em class="current" data-total-pages="' + pageNum + '">' + pageNum + '</em>';
+                } else {
+                    pageElementBuilder += newerHTML
+                        .replace(/\+(\d+)/, '+' + (totalCommitNum - 35 * (4 - i)))
+                        .replace(/>Newer</, '>' + (i + pageNum) + '<');
+                }
+            }
+            for (let i = 0; i < 5; i++) {
+                
+                // currentであればリンクなしで追加
+                if (i === 0) {
+                    pageElementBuilder += '<em class="current" data-total-pages="9">1</em>';
+                } else {
+                    pageElementBuilder += olderHTML
+                        .replace(/\+(\d+)/, '+' + (commitNum + 35 * (i - 1)))
+                        .replace(/>Older</, '>' + (i + pageNum) + '<');
+                }
+            }
+
+            // ボタンを作成
+            pageGroupElem.html(pageElementBuilder);
+
+            // currentの設定
+            pageGroupElem.find('em').css(currentProperty);
 
             // NewerとOlderを挿入する
             pageGroupElem.prepend(newerHTML);
