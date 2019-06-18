@@ -28,19 +28,22 @@ $(function() {
 
         // コミット分のページナンバー, 現在のページナンバーを定義
         // paginateをrenderする
-        let commitNum, pageNum;
+        let pageNum;
         switch (pageStatus) {
             case 0:
                 pageNum = 1;
                 break;
             case 1:
                 pageNum = (totalCommitNum - totalCommitNum % 35) / 35;
-                commitNum = null;
                 break;
             case 2:
                 const index = location.href.indexOf('+');
-                commitNum = parseInt(location.href.slice(index + 1), 10);
-                pageNum = (commitNum - 34) / 35 + 1;
+                const commitNum = parseInt(location.href.slice(index + 1), 10);
+                if (location.href.match(/\?(.*)=/)[1] == 'before') {
+                    pageNum = (commitNum - 1) / 35 - 1;
+                } else if (location.href.match(/\?(.*)=/)[1] == 'after') {
+                    pageNum = (commitNum - 34) / 35 + 1;
+                }
                 break;
             default:
                 break;
@@ -167,26 +170,31 @@ $(function() {
             // ボタンのHTMLを詰め込んでく
             let pageElementBuilder = '';
             for (let i = 0; i < 5; i++) {
+
+                if ((pageNum + i + 1) > ((totalCommitNum - totalCommitNum % 35) / 35)) { break; }
                 
-                // currentであればリンクなしで追加
-                if (i === 4) {
-                    pageElementBuilder += '<em class="current" data-total-pages="' + pageNum + '">' + pageNum + '</em>';
-                } else {
-                    pageElementBuilder += newerHTML
-                        .replace(/\+(\d+)/, '+' + (totalCommitNum - 35 * (4 - i)))
-                        .replace(/>Newer</, '>' + (i + pageNum) + '<');
-                }
+                let commitNum = pageNum * 35 + 35 * (i + 1);
+                pageElementBuilder += olderHTML
+                    .replace(/\+(\d+)/, '+' + commitNum)
+                    .replace(/>Older</, '>' + (pageNum + i + 1) + '<');
+                console.log(pageElementBuilder);
+                console.log(pageNum);
             }
             for (let i = 0; i < 5; i++) {
+
+                if ((pageNum - i) < 1) { break; }
                 
                 // currentであればリンクなしで追加
                 if (i === 0) {
-                    pageElementBuilder += '<em class="current" data-total-pages="9">1</em>';
+                    pageElementBuilder = '<em class="current" data-total-pages="' + pageNum + '">' + pageNum + '</em>' + pageElementBuilder;
                 } else {
-                    pageElementBuilder += olderHTML
-                        .replace(/\+(\d+)/, '+' + (commitNum + 35 * (i - 1)))
-                        .replace(/>Older</, '>' + (i + pageNum) + '<');
+                    let commitNum = (pageNum * 35 + 1) - 35 * (i - 1);
+                    pageElementBuilder = newerHTML
+                        .replace(/\+(\d+)/, '+' + commitNum)
+                        .replace(/>Newer</, '>' + (pageNum - i) + '<')
+                        + pageElementBuilder;
                 }
+                console.log(pageElementBuilder);
             }
 
             // ボタンを作成
